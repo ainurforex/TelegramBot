@@ -35,11 +35,11 @@ public class BotScheduledNotificator {
 
         if (notificationTasks != null) {
             notificationTasks.stream().forEach(e -> {
-                SendMessage message = new SendMessage(e.getChatId(), e.getNotificationText());
+                SendMessage message = new SendMessage(e.getChatId(), "Напоминание:\n"+e.getNotificationText());
                 telegramBot.execute(message);
                 logger.info("Send notifications to chatId: {}", e.getChatId() + " " + e.getNotificationText());
             });
-            logger.info("Send all notifications in Date&Time: {}", dateTime);
+
         }
     }
 }

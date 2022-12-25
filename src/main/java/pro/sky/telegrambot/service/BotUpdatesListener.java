@@ -39,20 +39,22 @@ public class BotUpdatesListener implements UpdatesListener {
             long chatId = (update.message().chat().id());
             logger.info("Processing update: {}", update);
             String updateMassage = update.message().text();
-            if (updateMassage != null) {
-                notificationSave(chatId, updateMassage);
 
+            if (updateMassage != null) {
                 if (updateMassage.equals("/start")) {
                     sendStartMasage(chatId);
+                } else {
+                    sendTrueMassage(notificationSave(chatId, updateMassage),chatId);
                 }
             }
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
 
-    private void notificationSave(long chatId, String updateMassage) {
-        Pattern pattern = Pattern.compile("([0-9\\.\\:\\s]{16})(\\s)([\\W+]+)");
+    private boolean notificationSave(long chatId, String updateMassage) {
+        Pattern pattern = Pattern.compile("([0-9\\.\\:\\s]{16})(\\s)([\\W+\\w+]+)");
         Matcher matcher = pattern.matcher(updateMassage);
+        boolean mattchOk = false;
         if (matcher.matches()) {
             String date = matcher.group(1);
             String massage = matcher.group(3);
@@ -62,8 +64,10 @@ public class BotUpdatesListener implements UpdatesListener {
             notificationTask.setChatId(chatId);
             notificationTask.setNotificationDateTime(date);
             notificationTaskRepository.save(notificationTask);
+            mattchOk = true;
             logger.info("Save notification: {}", notificationTask);
         }
+        return mattchOk;
     }
 
     private void sendStartMasage(long chatId) {
@@ -74,6 +78,16 @@ public class BotUpdatesListener implements UpdatesListener {
         SendMessage message = new SendMessage(chatId, massage);
         telegramBot.execute(message);
         logger.info("Send Start massage to chatId: {}", chatId);
+    }
+
+    private void sendTrueMassage(boolean result, long chatId) {
+        SendMessage message;
+        if (result) {
+            message = new SendMessage(chatId, "Задача принята");
+        } else {
+            message = new SendMessage(chatId, "Неверный формат");
+        }
+        telegramBot.execute(message);
     }
 
 
